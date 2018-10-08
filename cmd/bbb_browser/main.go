@@ -20,6 +20,7 @@ import (
 func main() {
 	var (
 		blobstoreConfig = flag.String("blobstore-config", "/config/blobstore.conf", "Configuration for blob storage")
+		browsePort      = flag.String("port", ":80", "Browse port")
 	)
 	flag.Parse()
 
@@ -49,5 +50,5 @@ func main() {
 		ac.NewBlobAccessActionCache(actionCacheBlobAccess),
 		templates,
 		router)
-	log.Fatal(http.ListenAndServe(":80", router))
+	log.Fatal(http.ListenAndServe(*browsePort, router))
 }

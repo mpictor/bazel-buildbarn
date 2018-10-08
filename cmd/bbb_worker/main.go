@@ -29,6 +29,7 @@ func main() {
 		browserURLString = flag.String("browser-url", "http://bbb-browser/", "URL of the Bazel Buildbarn Browser, accessible by the user through 'bazel build --verbose_failures'")
 		blobstoreConfig  = flag.String("blobstore-config", "/config/blobstore.conf", "Configuration for blob storage")
 		schedulerAddress = flag.String("scheduler", "", "Address of the scheduler to which to connect")
+		metricsPort      = flag.String("metrics-port", ":80", "Port on which metrics are served")
 	)
 	flag.Parse()
 
@@ -43,7 +44,7 @@ func main() {
 	// Web server for metrics and profiling.
 	http.Handle("/metrics", promhttp.Handler())
 	go func() {
-		log.Fatal(http.ListenAndServe(":80", nil))
+		log.Fatal(http.ListenAndServe(*metricsPort, nil))
 	}()
 
 	// Storage access.

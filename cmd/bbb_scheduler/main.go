@@ -20,13 +20,15 @@ import (
 func main() {
 	var (
 		jobsPendingMax = flag.Uint("jobs-pending-max", 100, "Maximum number of build actions to be enqueued")
+		metricsPort    = flag.String("metrics-port", ":80", "Port on which metrics are served")
+		schedPort      = flag.String("port", ":8981", "Port on which scheduler listens")
 	)
 	flag.Parse()
 
 	// Web server for metrics and profiling.
 	http.Handle("/metrics", promhttp.Handler())
 	go func() {
-		log.Fatal(http.ListenAndServe(":80", nil))
+		log.Fatal(http.ListenAndServe(*metricsPort, nil))
 	}()
 
 	executionServer, schedulerServer := builder.NewWorkerBuildQueue(util.DigestKeyWithInstance, *jobsPendingMax)
@@ -42,7 +44,7 @@ func main() {
 	grpc_prometheus.EnableHandlingTimeHistogram()
 	grpc_prometheus.Register(s)
 
-	sock, err := net.Listen("tcp", ":8981")
+	sock, err := net.Listen("tcp", *schedPort)
 	if err != nil {
 		log.Fatal("Failed to create listening socket: ", err)
 	}

@@ -30,6 +30,7 @@ func main() {
 		blobstoreConfig  = flag.String("blobstore-config", "/config/blobstore.conf", "Configuration for blob storage")
 		schedulerAddress = flag.String("scheduler", "", "Address of the scheduler to which to connect")
 		metricsPort      = flag.String("metrics-port", ":80", "Port on which metrics are served")
+		cacheDir         = flag.String("cache-dir", "cache", "Relative or absolute path to local cache dir")
 	)
 	flag.Parse()
 
@@ -54,7 +55,7 @@ func main() {
 	}
 
 	// On-disk caching of content for efficient linking into build environments.
-	err = os.Mkdir("/cache", 0755)
+	err = os.Mkdir(*cacheDir, 0755)
 	if os.IsExist(err) {
 		err = nil
 	}
@@ -67,7 +68,7 @@ func main() {
 			cas.NewBlobAccessContentAddressableStorage(
 				blobstore.NewExistencePreconditionBlobAccess(
 					contentAddressableStorageBlobAccess)),
-			util.DigestKeyWithoutInstance, "/cache", 10000, 1<<30),
+			util.DigestKeyWithoutInstance, *cacheDir, 10000, 1<<30),
 		util.DigestKeyWithoutInstance, 1000)
 	buildExecutor := builder.NewServerLogInjectingBuildExecutor(
 		builder.NewCachingBuildExecutor(
@@ -76,7 +77,6 @@ func main() {
 				blobstore.NewMetricsBlobAccess(actionCacheBlobAccess, "ac_build_executor"))),
 		contentAddressableStorage,
 		browserURL)
-
 	// Create connection with scheduler.
 	schedulerConnection, err := grpc.Dial(
 		*schedulerAddress,

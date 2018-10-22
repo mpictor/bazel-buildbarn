@@ -9,6 +9,8 @@ import (
 	_ "net/http/pprof"
 	"net/url"
 	"os"
+	"os/user"
+	"strconv"
 	"syscall"
 	"time"
 
@@ -32,6 +34,7 @@ func main() {
 		metricsPort      = flag.String("metrics-port", ":80", "Port on which metrics are served")
 		cacheDir         = flag.String("cache-dir", "cache", "Relative or absolute path to local cache dir")
 		workDir          = flag.String("work-dir", "", "Set work dir (default: /)")
+		buildAs          = flag.String("build-as", "build", "User to build as")
 	)
 	flag.Parse()
 
@@ -42,6 +45,23 @@ func main() {
 
 	// Respect file permissions that we pass to os.OpenFile(), os.Mkdir(), etc.
 	syscall.Umask(0)
+
+	usr, err := user.Lookup(*buildAs)
+	if err != nil {
+		log.Fatal("Looking up user ", *buildAs, ": ", err)
+	}
+	uid, err := strconv.ParseUint(usr.Uid, 10, 32)
+	if err != nil {
+		log.Fatal("Parsing UID: ", err)
+	}
+	gid, err := strconv.ParseUint(usr.Gid, 10, 32)
+	if err != nil {
+		log.Fatal("Parsing GID: ", err)
+	}
+	buildUser := &builder.BuildUser{
+		Uid: uint32(uid),
+		Gid: uint32(gid),
+	}
 
 	// Web server for metrics and profiling.
 	http.Handle("/metrics", promhttp.Handler())
@@ -74,6 +94,7 @@ func main() {
 	buildExecutor := builder.NewServerLogInjectingBuildExecutor(
 		builder.NewCachingBuildExecutor(
 			builder.NewLocalBuildExecutor(
+				buildUser,
 				*workDir,
 				contentAddressableStorage),
 			ac.NewBlobAccessActionCache(

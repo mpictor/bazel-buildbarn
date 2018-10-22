@@ -26,6 +26,10 @@ const (
 	pathStderr    = "/stderr"
 )
 
+type BuildUser struct {
+	Uid, Gid uint32
+}
+
 var (
 	localBuildExecutorDurationSeconds = prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{
@@ -54,17 +58,19 @@ type localBuildExecutor struct {
 	contentAddressableStorage   cas.ContentAddressableStorage
 	pathTempRoot, pathBuildRoot string
 	pathStdout, pathStderr      string
+	user                        *BuildUser
 }
 
 // NewLocalBuildExecutor returns a BuildExecutor that executes build
 // steps on the local system.
-func NewLocalBuildExecutor(pathPrefix string, contentAddressableStorage cas.ContentAddressableStorage) BuildExecutor {
+func NewLocalBuildExecutor(user *BuildUser, pathPrefix string, contentAddressableStorage cas.ContentAddressableStorage) BuildExecutor {
 	return &localBuildExecutor{
 		contentAddressableStorage: contentAddressableStorage,
 		pathTempRoot:              path.Join(pathPrefix, pathTempRoot),
 		pathBuildRoot:             path.Join(pathPrefix, pathBuildRoot),
 		pathStdout:                path.Join(pathPrefix, pathStdout),
 		pathStderr:                path.Join(pathPrefix, pathStderr),
+		user:                      user,
 	}
 }
 
@@ -175,8 +181,8 @@ func (be *localBuildExecutor) runCommand(ctx context.Context, command *remoteexe
 
 	cmd.SysProcAttr = &syscall.SysProcAttr{
 		Credential: &syscall.Credential{
-			Uid: 1,
-			Gid: 1,
+			Uid: be.user.Uid,
+			Gid: be.user.Gid,
 		},
 	}
 	return cmd.Run()

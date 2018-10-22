@@ -31,6 +31,7 @@ func main() {
 		schedulerAddress = flag.String("scheduler", "", "Address of the scheduler to which to connect")
 		metricsPort      = flag.String("metrics-port", ":80", "Port on which metrics are served")
 		cacheDir         = flag.String("cache-dir", "cache", "Relative or absolute path to local cache dir")
+		workDir          = flag.String("work-dir", "", "Set work dir (default: /)")
 	)
 	flag.Parse()
 
@@ -72,7 +73,9 @@ func main() {
 		util.DigestKeyWithoutInstance, 1000)
 	buildExecutor := builder.NewServerLogInjectingBuildExecutor(
 		builder.NewCachingBuildExecutor(
-			builder.NewLocalBuildExecutor(contentAddressableStorage),
+			builder.NewLocalBuildExecutor(
+				*workDir,
+				contentAddressableStorage),
 			ac.NewBlobAccessActionCache(
 				blobstore.NewMetricsBlobAccess(actionCacheBlobAccess, "ac_build_executor"))),
 		contentAddressableStorage,

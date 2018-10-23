@@ -53,7 +53,11 @@ func main() {
 	}
 
 	// On-disk caching of content for efficient linking into build environments.
-	if err := os.Mkdir("/cache", 0); err != nil {
+	err = os.Mkdir("/cache", 0755)
+	if os.IsExist(err) {
+		err = nil
+	}
+	if err != nil {
 		log.Fatal("Failed to create cache directory: ", err)
 	}
 

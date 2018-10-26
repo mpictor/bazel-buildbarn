@@ -185,3 +185,8 @@ go_repository(
     commit = "04af85275a5c7ac09d16bb3b9b2e751ed45154e5",
     importpath = "github.com/stretchr/testify",
 )
+
+git_repository(name='bazel_amd64_crosstool', remote='https://github.com/mpictor/bazel-amd64-crosstool',commit='d80c3e9')
+load("@bazel_amd64_crosstool//:tools/deps.bzl","bazel_crosstool_deps")
+bazel_crosstool_deps()
+

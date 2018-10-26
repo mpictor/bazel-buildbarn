@@ -1,1 +1,6 @@
 /bazel-*
+/bbb_frontend
+/bbb_worker
+/bbb_scheduler
+/doc/docs.md
+/doc/index.html

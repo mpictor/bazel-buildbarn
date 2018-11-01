@@ -35,6 +35,7 @@ func main() {
 		cacheDir         = flag.String("cache-dir", "cache", "Relative or absolute path to local cache dir")
 		workDir          = flag.String("work-dir", "", "Set work dir (default: /)")
 		buildAs          = flag.String("build-as", "build", "User to build as")
+		verbose        = flag.Bool("v", false, "Print request/response messages")
 	)
 	flag.Parse()
 
@@ -114,13 +115,13 @@ func main() {
 
 	// Repeatedly ask the scheduler for work.
 	for {
-		err := subscribeAndExecute(schedulerClient, buildExecutor, browserURL)
+		err := subscribeAndExecute(schedulerClient, buildExecutor, browserURL, *verbose)
 		log.Print("Failed to subscribe and execute: ", err)
 		time.Sleep(time.Second * 3)
 	}
 }
 
-func subscribeAndExecute(schedulerClient scheduler.SchedulerClient, buildExecutor builder.BuildExecutor, browserURL *url.URL) error {
+func subscribeAndExecute(schedulerClient scheduler.SchedulerClient, buildExecutor builder.BuildExecutor, browserURL *url.URL, verbose bool) error {
 	stream, err := schedulerClient.GetWork(context.Background())
 	if err != nil {
 		return err
@@ -143,10 +144,14 @@ func subscribeAndExecute(schedulerClient scheduler.SchedulerClient, buildExecuto
 		if err != nil {
 			return err
 		}
-		log.Print("Action: ", actionURL.String())
+		if verbose {
+			log.Print("Action: ", actionURL.String())
+		}
 
 		response, _ := buildExecutor.Execute(stream.Context(), request)
-		log.Print("ExecuteResponse: ", response)
+		if verbose {
+			log.Print("ExecuteResponse: ", response)
+		}
 		if err := stream.Send(response); err != nil {
 			return err
 		}

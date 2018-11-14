@@ -28,9 +28,8 @@ http_archive(
 
 http_archive(
     name = "io_bazel_rules_go",
-    sha256 = "322cbfa381a396166ba82d7fa3513dadf8e0b069b96dedbc0c7ed0b197a81a5e",
-    strip_prefix = "rules_go-7dc1d3057cdf7456cd4fbd9188e1d795e2589a70",
-    urls = ["https://github.com/bazelbuild/rules_go/archive/7dc1d3057cdf7456cd4fbd9188e1d795e2589a70.tar.gz"],
+    urls = ["https://github.com/bazelbuild/rules_go/releases/download/0.16.2/rules_go-0.16.2.tar.gz"],
+    sha256 = "f87fa87475ea107b3c69196f39c82b7bbf58fe27c62a338684c20ca17d1d8613",
 )
 
 http_archive(

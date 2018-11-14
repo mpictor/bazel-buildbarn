@@ -1,1 +1,5 @@
 /bazel-*
+/bbb_frontend
+/bbb_scheduler
+/bbb_worker
+/bbb_browser
